@@ -1,0 +1,7 @@
+.perspective {
+	height: 100%;
+}
+
+div.yui-layout-bd.yui-layout-bd-nohd.yui-layout-bd-noft > div, div.yui-b.tabbed-panel-layout-center.yui-layout-wrap > div.yui-layout-bd.yui-layout-bd-nohd.yui-layout-bd-noft > div > div {
+	height: 100%;
+}

@@ -1,0 +1,21 @@
+.jumbotron {
+	margin: 15px;
+}
+
+.text-block {
+	margin: 67px 22px;
+}
+
+@media ( min-width : 1400px) {
+	h1.tag-line {
+		font-size: 49px;
+		margin: 50px auto;
+	}
+}
+
+@media screen and (max-width: 1400px) {
+	h1.tag-line {
+		font-size: 30px;
+		margin: 30px auto;
+	}
+}

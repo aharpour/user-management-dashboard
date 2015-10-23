@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-fragment xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-fragment_3_0.xsd" metadata-complete="true" version="3.0">
+
+  <servlet>
+    <servlet-name>UmdFrameResourceServlet</servlet-name>
+    <servlet-class>nl.openweb.hippo.umd.ui.ResourceServlet</servlet-class>
+    <init-param>
+      <param-name>jarPathPrefix</param-name>
+      <param-value>/nl/openweb/hippo/umd/ui/frame</param-value>
+    </init-param>
+    <init-param>
+      <param-name>allowedResourcePaths</param-name>
+      <param-value>^/.*\..*</param-value>
+    </init-param>
+    <init-param>
+      <!--
+        Cache timeout in seconds. Make sure to increase it in production environments,
+        for example to one day (cacheTimeout = 86400)
+      -->
+      <param-name>cacheTimeout</param-name>
+      <param-value>0</param-value>
+    </init-param>
+  </servlet>
+
+  <servlet>
+    <servlet-name>UmdRepositoryWebServicesServlet</servlet-name>
+    <servlet-class>org.apache.cxf.jaxrs.servlet.CXFNonSpringJaxrsServlet</servlet-class>
+    <init-param>
+      <param-name>jaxrs.serviceClasses</param-name>
+      <param-value>
+        org.onehippo.forge.webservices.jaxrs.RootResource, org.onehippo.forge.webservices.jaxrs.system.SystemResource, org.onehippo.forge.webservices.jaxrs.jcr.NodesResource, org.onehippo.forge.webservices.jaxrs.jcr.PropertiesResource, org.onehippo.forge.webservices.jaxrs.jcr.QueryResource, org.onehippo.forge.webservices.jaxrs.StatsResource, nl.openweb.hippo.umd.webservices.GreetingResource
+      </param-value>
+    </init-param>
+    <init-param>
+      <param-name>jaxrs.providers</param-name>
+      <param-value>
+        org.codehaus.jackson.jaxrs.JacksonJaxbJsonProvider, org.apache.cxf.rs.security.cors.CrossOriginResourceSharingFilter, org.onehippo.forge.webservices.jaxrs.exception.CustomWebApplicationExceptionMapper, nl.openweb.hippo.umd.webservices.HippoAuthenticationRequestHandler
+      </param-value>
+    </init-param>
+    <init-param>
+      <param-name>jaxrs.extensions</param-name>
+      <param-value>json=application/json, xml=application/xml</param-value>
+    </init-param>
+    <load-on-startup>6</load-on-startup>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>UmdFrameResourceServlet</servlet-name>
+    <url-pattern>/umd/frame/*</url-pattern>
+  </servlet-mapping>
+  <!-- the rest api servlet mapping  -->
+  <servlet-mapping>
+    <servlet-name>UmdRepositoryWebServicesServlet</servlet-name>
+    <url-pattern>/umd/rest/api/*</url-pattern>
+  </servlet-mapping>
+</web-fragment>
