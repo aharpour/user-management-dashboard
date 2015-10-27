@@ -29,7 +29,7 @@
     <init-param>
       <param-name>jaxrs.serviceClasses</param-name>
       <param-value>
-        org.onehippo.forge.webservices.jaxrs.RootResource, org.onehippo.forge.webservices.jaxrs.system.SystemResource, org.onehippo.forge.webservices.jaxrs.jcr.NodesResource, org.onehippo.forge.webservices.jaxrs.jcr.PropertiesResource, org.onehippo.forge.webservices.jaxrs.jcr.QueryResource, org.onehippo.forge.webservices.jaxrs.StatsResource, nl.openweb.hippo.umd.webservices.GreetingResource
+        org.onehippo.forge.webservices.jaxrs.RootResource, org.onehippo.forge.webservices.jaxrs.system.SystemResource, org.onehippo.forge.webservices.jaxrs.jcr.NodesResource, org.onehippo.forge.webservices.jaxrs.jcr.PropertiesResource, org.onehippo.forge.webservices.jaxrs.jcr.QueryResource, org.onehippo.forge.webservices.jaxrs.StatsResource, nl.openweb.hippo.umd.webservices.UsersResource
       </param-value>
     </init-param>
     <init-param>

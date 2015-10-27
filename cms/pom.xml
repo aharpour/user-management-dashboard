@@ -31,14 +31,20 @@
           <artifactId>hippo-cms-richtext-ckeditor-plugins</artifactId>
         </exclusion>
       </exclusions>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.onehippo.cms7</groupId>
       <artifactId>hippo-cms-api</artifactId>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.onehippo.forge.webservices</groupId>
       <artifactId>hippo-addon-restful-webservices</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-csv</artifactId>
     </dependency>
   </dependencies>
 

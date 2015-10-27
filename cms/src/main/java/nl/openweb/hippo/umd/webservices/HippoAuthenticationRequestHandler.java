@@ -20,6 +20,7 @@
 package nl.openweb.hippo.umd.webservices;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
 
 import javax.jcr.LoginException;
 import javax.jcr.Session;
@@ -46,10 +47,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Provider
-public class HippoAuthenticationRequestHandler implements RequestHandler,ResponseHandler {
+public class HippoAuthenticationRequestHandler implements RequestHandler, ResponseHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(HippoAuthenticationRequestHandler.class);
     private Session session = null;
+    public static final String[] STREAMING_OUTPUT_SERVICES = new String[] { "getGroupsOverview", "getUsersOverview" };
 
     public Response handleRequest(Message m, ClassResourceInfo resourceClass) {
         ISessionStore sessionStore = Application.get().getSessionStore();
@@ -82,10 +84,26 @@ public class HippoAuthenticationRequestHandler implements RequestHandler,Respons
     @Override
     public Response handleResponse(final Message m, final OperationResourceInfo ori, final Response response) {
         if (session != null && session.isLive()) {
-            session.logout();
+            if (!(ori == null && ori.getMethodToInvoke() == null && isStreamingOutputServices(ori.getMethodToInvoke()))) {
+                session.logout();
+            }
             session = null;
         }
         return null;
+    }
+
+    public boolean isStreamingOutputServices(Method methodToInvoke) {
+        boolean result = false;
+        if (methodToInvoke != null) {
+            String calledMethod = methodToInvoke.getName();
+            for (String serviceMethod : STREAMING_OUTPUT_SERVICES) {
+                if (serviceMethod.equals(calledMethod)) {
+                    result = true;
+                    break;
+                }
+            }
+        }
+        return result;
     }
 
     private boolean isAuthenticated() {

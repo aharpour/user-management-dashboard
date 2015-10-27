@@ -17,6 +17,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <hippo.addon.restful.webservices.version>0.2.0</hippo.addon.restful.webservices.version>
+    <commons.csv.version>1.2</commons.csv.version>
   </properties>
 
   <dependencyManagement>
@@ -25,6 +26,11 @@
         <groupId>org.onehippo.forge.webservices</groupId>
         <artifactId>hippo-addon-restful-webservices</artifactId>
         <version>${hippo.addon.restful.webservices.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-csv</artifactId>
+        <version>${commons.csv.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
