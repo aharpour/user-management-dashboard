@@ -84,7 +84,7 @@ public class HippoAuthenticationRequestHandler implements RequestHandler, Respon
     @Override
     public Response handleResponse(final Message m, final OperationResourceInfo ori, final Response response) {
         if (session != null && session.isLive()) {
-            if (!(ori == null && ori.getMethodToInvoke() == null && isStreamingOutputServices(ori.getMethodToInvoke()))) {
+            if (!(ori != null && ori.getMethodToInvoke() != null && isStreamingOutputServices(ori.getMethodToInvoke()))) {
                 session.logout();
             }
             session = null;

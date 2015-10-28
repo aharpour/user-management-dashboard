@@ -3,13 +3,13 @@ package nl.openweb.hippo.umd.webservices;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
-import javax.jcr.Value;
 import javax.jcr.query.InvalidQueryException;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -55,12 +55,10 @@ public class UsersResource {
             public void write(OutputStream output) throws IOException, WebApplicationException {
                 try (CSVPrinter csvFilePrinter = new CSVPrinter(new PrintStream(output), CSV_FILE_FORMAT)) {
                     printUsersOverviewHeaders(csvFilePrinter);
-                    List<String> algemeenEditors = UserUtils.getAlgemeenEditorsGroupMembers(session);
-                    for (String user : algemeenEditors) {
-                        Node userNode = UserUtils.getUserNodeById(user, session);
-                        if (userNode != null && UserUtils.isActiveNoneSystemUser(userNode)) {
-                            printUser(userNode, session, csvFilePrinter);
-                        }
+                    List<String> algemeenEditorsMembers = UserUtils.getDefaultGroupMembers(session);
+                    for (String member : algemeenEditorsMembers) {
+                        NodeIterator userNodes = UserUtils.getUserNodeById(member, session);
+                        printUsers(session, csvFilePrinter, userNodes);
                     }
                 } catch (RepositoryException e) {
                     LOG.error(e.getMessage(), e);
@@ -70,8 +68,10 @@ public class UsersResource {
                 }
 
             }
+
         };
-        return Response.ok().header("Content-Disposition", "attachment; filename=Users.csv").entity(output).build();
+        return Response.ok().header("Content-Disposition", "attachment; filename=Users-Overview.csv").entity(output)
+                .build();
     }
 
     @GET
@@ -99,7 +99,8 @@ public class UsersResource {
             }
 
         };
-        return Response.ok().header("Content-Disposition", "attachment; filename=Users.csv").entity(output).build();
+        return Response.ok().header("Content-Disposition", "attachment; filename=Groups-Overview.csv").entity(output)
+                .build();
     }
 
     @POST
@@ -114,15 +115,39 @@ public class UsersResource {
 
     private void printGroup(Node group, Session session, CSVPrinter csvFilePrinter) throws IOException,
             RepositoryException, InvalidQueryException {
-        csvFilePrinter.print(group);
+        csvFilePrinter.print(group.getName());
         List<String> members = UserUtils.getMembers(group);
         for (String member : members) {
-            Node userNode = UserUtils.getUserNodeById(member, session);
-            if (UserUtils.isActiveNoneSystemUser(userNode)) {
-                csvFilePrinter.print(userNode.getName());
-            }
+            NodeIterator userNodes = UserUtils.getUserNodeById(member, session);
+            printGroupsUsers(csvFilePrinter, userNodes, session);
         }
         csvFilePrinter.println();
+    }
+
+    private void printGroupsUsers(CSVPrinter csvFilePrinter, NodeIterator userNodes, Session session) throws RepositoryException,
+            IOException {
+        if (userNodes != null) {
+            List<String> members = UserUtils.getDefaultGroupPath(session) != null ? UserUtils.getDefaultGroupMembers(session) : null;
+            
+            while (userNodes.hasNext()) {
+                Node userNode = userNodes.nextNode();
+                if (UserUtils.isActiveNoneSystemUser(userNode) && (members == null || UserUtils.isAlreadyMember(userNode.getName(), members))) {
+                    csvFilePrinter.print(userNode.getName());
+                }
+            }
+        }
+    }
+
+    private void printUsers(final Session session, CSVPrinter csvFilePrinter, NodeIterator userNodes)
+            throws RepositoryException, IOException {
+        if (userNodes != null) {
+            while (userNodes.hasNext()) {
+                Node userNode = userNodes.nextNode();
+                if (userNode != null && UserUtils.isActiveNoneSystemUser(userNode)) {
+                    printUser(userNode, session, csvFilePrinter);
+                }
+            }
+        }
     }
 
     private void printUser(Node user, final Session session, CSVPrinter csvFilePrinter) throws RepositoryException,
