@@ -1,6 +1,7 @@
 package nl.openweb.hippo.umd.utils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.jcr.Node;
@@ -16,6 +17,8 @@ import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
 import javax.jcr.query.QueryResult;
 
+import nl.openweb.hippo.umd.beans.GroupCopyResults;
+
 import org.apache.commons.lang.StringUtils;
 import org.hippoecm.repository.api.HippoNodeType;
 
@@ -25,6 +28,23 @@ public class UserUtils {
     private static final String CONFIGURATION_NODE_PATH = "hippo:configuration/hippo:modules/umd";
 
     private UserUtils() {
+    }
+    
+    public static GroupCopyResults copyUserGroups(String sourceUserId, String targetUserId, Session session) throws RepositoryException {
+        GroupCopyResults result = new GroupCopyResults();
+        NodeIterator nodes = getGroups(sourceUserId, session);
+        while(nodes.hasNext()) {
+            Node group = nodes.nextNode();
+            List<String> members = getMembers(group);
+            if (isAlreadyMember(targetUserId, members)) {
+                result.getAlreadyMemberOf().add(group.getName());
+            } else {
+                members.add(targetUserId);
+                group.setProperty(HippoNodeType.HIPPO_MEMBERS, members.toArray(new String[members.size()]));
+                result.getCopiedGroups().add(group.getName());
+            }
+        }
+        return result;
     }
 
     public static NodeIterator getUserNodeById(String userId, Session session) throws InvalidQueryException,
@@ -64,6 +84,7 @@ public class UserUtils {
         if (StringUtils.isNotBlank(defaultGroup)) {
             Node node = session.getNode(defaultGroup);
             result = getMembers(node);
+            Collections.sort(result);
         } else {
             result = new ArrayList<>();
             NodeIterator allActiveUsers = getAllActiveUsers(session);
@@ -72,6 +93,10 @@ public class UserUtils {
             }
         }
         return result;
+    }
+    
+    public static boolean isUser(Node node) throws RepositoryException {
+        return node != null && node.isNodeType(HippoNodeType.NT_USER);
     }
 
     public static String getDefaultGroupPath(Session session) throws PathNotFoundException, RepositoryException,
@@ -111,7 +136,7 @@ public class UserUtils {
 
     public static NodeIterator getGroups(String userId, Session session) throws RepositoryException {
         StringBuilder stringBuilder = new StringBuilder(
-                "select * from [hipposys:group] as group  WHERE group.[hipposys:members]='").append(userId).append("' order by Name(group)");
+                "SELECT * FROM [hipposys:group] AS group  WHERE group.[hipposys:members]='").append(userId).append("' order by Name(group)");
         return executeQuery(session, stringBuilder.toString());
     }
 

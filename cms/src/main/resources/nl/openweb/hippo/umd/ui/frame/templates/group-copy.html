@@ -1,0 +1,20 @@
+<div class="jumbotron margin row">
+  <div class="form-group col-sm-6 col-xs-12">
+      <label for="source" class="control-label col-xs-2">Copy From:</label>
+      <select name="source" id="source" class="col-xs-10" data-ng-model="source">
+        <option data-ng-repeat="user in availableUsers" value="{{user.path}}">{{user.name}}</option>
+      </select>
+  </div>
+  <div class="form-group col-sm-6 col-xs-12">
+      <label for="targert" class="control-label col-xs-2">Copy To:</label>
+      <select name="targert" id="targert" class="col-xs-10" data-ng-model="target">
+        <option data-ng-repeat="user in availableUsers" value="{{user.path}}">{{user.name}}</option>
+      </select>
+  </div>
+  <div class="form-group clearfix">
+  <button class="col-sm-offset-5 col-sm-2 col-xs-offset-4 col-xs-4 btn btn-danger" data-ng-click="submit()">Copy</button>
+  </div>
+  <div class="form-group">
+    <textarea class="col-xs-12" rows="20" data-ng-model="report"></textarea>
+  </div>
+</div>

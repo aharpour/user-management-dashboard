@@ -1,14 +1,19 @@
 'use strict';
 
-// Declare app level module which depends on filters, and services
 angular.module('myApp',
-		[ 'myApp.filters', 'myApp.services', 'myApp.directives', 'myApp.controllers', 'ngRoute', 'ngSanitize']).config(
-		[ '$routeProvider', function($routeProvider) {
-			$routeProvider.when('/', {
-				controller : 'Home',
-				template : '<div ng-include="template"></div>'
-			});
-			$routeProvider.otherwise({
-				redriectTo : '#/'
-			});
-		} ]);
+    [ 'ui.router', 'myApp.controllers']).config(
+    [ '$urlRouterProvider', '$stateProvider', function($urlRouterProvider, $stateProvider) {
+      $stateProvider.state('copy', {
+        url: '/',
+        templateUrl : 'templates/group-copy.html',
+        controller : 'copy'
+      });
+      $stateProvider.state('overviews', {
+        url: '/overviews',
+        templateUrl : 'templates/overviews.html',
+        controller : 'overviews'
+      });
+
+      $urlRouterProvider.otherwise('/');
+      
+} ]);

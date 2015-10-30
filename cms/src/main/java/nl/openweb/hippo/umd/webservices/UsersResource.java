@@ -12,10 +12,10 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.query.InvalidQueryException;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
@@ -24,6 +24,9 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.StreamingOutput;
 
+import nl.openweb.hippo.umd.beans.CopyRequest;
+import nl.openweb.hippo.umd.beans.GroupCopyResults;
+import nl.openweb.hippo.umd.beans.UserBean;
 import nl.openweb.hippo.umd.utils.UserUtils;
 
 import org.apache.commons.csv.CSVFormat;
@@ -55,8 +58,8 @@ public class UsersResource {
             public void write(OutputStream output) throws IOException, WebApplicationException {
                 try (CSVPrinter csvFilePrinter = new CSVPrinter(new PrintStream(output), CSV_FILE_FORMAT)) {
                     printUsersOverviewHeaders(csvFilePrinter);
-                    List<String> algemeenEditorsMembers = UserUtils.getDefaultGroupMembers(session);
-                    for (String member : algemeenEditorsMembers) {
+                    List<String> defaultGroupMembers = UserUtils.getDefaultGroupMembers(session);
+                    for (String member : defaultGroupMembers) {
                         NodeIterator userNodes = UserUtils.getUserNodeById(member, session);
                         printUsers(session, csvFilePrinter, userNodes);
                     }
@@ -103,14 +106,50 @@ public class UsersResource {
                 .build();
     }
 
-    @POST
-    @Path("copy/groups/{source}/{target}")
+    @GET
+    @Path("list")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response copyUserGroup(@PathParam("source") String source, @PathParam("target") String target,
-            @Context HttpServletRequest request) {
-        Session session = JcrSessionUtil.getSessionFromRequest(request);
+    public Response listAllTheUsers(@Context HttpServletRequest request) {
+        try {
+            List<UserBean> result = new ArrayList<>();
+            Session session = JcrSessionUtil.getSessionFromRequest(request);
+            List<String> members = UserUtils.getDefaultGroupMembers(session);
+            for (String member : members) {
+                NodeIterator userNodes = UserUtils.getUserNodeById(member, session);
+                while (userNodes.hasNext()) {
+                    Node user = userNodes.nextNode();
+                    result.add(new UserBean(user.getPath(), user.getName()));
+                }
+            }
+            return Response.ok().entity(result).build();
+        } catch (RepositoryException e) {
+            LOG.error(e.getMessage(), e);
+            throw new WebApplicationException(e, Status.INTERNAL_SERVER_ERROR);
+        }
+    }
 
-        return Response.ok().entity("test").build();
+    @POST
+    @Path("copy/groups")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response copyUserGroup(CopyRequest copyRequest, @Context HttpServletRequest request) {
+        try {
+            Response result;
+            Session session = JcrSessionUtil.getSessionFromRequest(request);
+            Node source = session.getNode(copyRequest.getSource());
+            Node target = session.getNode(copyRequest.getTarget());
+            if (UserUtils.isUser(source) && UserUtils.isUser(target)) {
+                GroupCopyResults report = UserUtils.copyUserGroups(source.getName(), source.getName(), session);
+                result = Response.ok().entity(report).build();
+            } else {
+                result = Response.status(Status.BAD_REQUEST).build();
+            }
+
+            return result;
+        } catch (RepositoryException e) {
+            LOG.error(e.getMessage(), e);
+            throw new WebApplicationException(e, Status.INTERNAL_SERVER_ERROR);
+        }
     }
 
     private void printGroup(Node group, Session session, CSVPrinter csvFilePrinter) throws IOException,
@@ -124,14 +163,16 @@ public class UsersResource {
         csvFilePrinter.println();
     }
 
-    private void printGroupsUsers(CSVPrinter csvFilePrinter, NodeIterator userNodes, Session session) throws RepositoryException,
-            IOException {
+    private void printGroupsUsers(CSVPrinter csvFilePrinter, NodeIterator userNodes, Session session)
+            throws RepositoryException, IOException {
         if (userNodes != null) {
-            List<String> members = UserUtils.getDefaultGroupPath(session) != null ? UserUtils.getDefaultGroupMembers(session) : null;
-            
+            List<String> members = UserUtils.getDefaultGroupPath(session) != null ? UserUtils
+                    .getDefaultGroupMembers(session) : null;
+
             while (userNodes.hasNext()) {
                 Node userNode = userNodes.nextNode();
-                if (UserUtils.isActiveNoneSystemUser(userNode) && (members == null || UserUtils.isAlreadyMember(userNode.getName(), members))) {
+                if (UserUtils.isActiveNoneSystemUser(userNode)
+                        && (members == null || UserUtils.isAlreadyMember(userNode.getName(), members))) {
                     csvFilePrinter.print(userNode.getName());
                 }
             }
