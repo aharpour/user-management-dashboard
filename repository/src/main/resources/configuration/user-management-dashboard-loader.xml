@@ -5,6 +5,9 @@
   <sv:property sv:name="cluster.name" sv:type="String">
     <sv:value>user-management-dashboard</sv:value>
   </sv:property>
+  <sv:property sv:name="perspectiveName" sv:type="String">
+    <sv:value>umd</sv:value>
+  </sv:property>
   <sv:property sv:name="plugin.class" sv:type="String">
     <sv:value>org.hippoecm.frontend.plugin.loader.PluginClusterLoader</sv:value>
   </sv:property>
