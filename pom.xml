@@ -12,7 +12,41 @@
   <version>1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
-  <name>user-management-dashboard</name>
+  <name>User management dashboard</name>
+  
+  <developers>
+    <developer>
+      <name>Ebrahim Aharpour</name>
+      <url>https://nl.linkedin.com/pub/ebrahim-aharpour/12/875/b36</url>
+    </developer>
+  </developers>
+
+
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <scm>
+    <connection>scm:git:git@github.com:aharpour/user-management-dashboard.git</connection>
+    <developerConnection>scm:git:git@github.com:aharpour/user-management-dashboard.git</developerConnection>
+    <url>https://github.com/aharpour/user-management-dashboard</url>
+    <tag>HEAD</tag>
+  </scm>
+
+  <distributionManagement>
+    <repository>
+      <id>openweb-maven-releases</id>
+      <url>https://maven.open-web.nl/content/repositories/releases/</url>
+    </repository>
+    <snapshotRepository>
+      <id>openweb-maven-snapshots</id>
+      <url>https://maven.open-web.nl/content/repositories/snapshots/</url>
+    </snapshotRepository>
+  </distributionManagement>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
