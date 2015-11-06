@@ -13,7 +13,7 @@
   <packaging>pom</packaging>
 
   <name>User management dashboard</name>
-  
+
   <developers>
     <developer>
       <name>Ebrahim Aharpour</name>
@@ -84,4 +84,31 @@
     <module>cms</module>
     <module>repository</module>
   </modules>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <artifactId>maven-release-plugin</artifactId>
+          <version>2.4.1</version>
+          <configuration>
+            <releaseProfiles>release</releaseProfiles>
+            <goals>install deploy</goals>
+          </configuration>
+          <dependencies>
+            <dependency>
+              <groupId>org.apache.maven.scm</groupId>
+              <artifactId>maven-scm-api</artifactId>
+              <version>1.8.1</version>
+            </dependency>
+            <dependency>
+              <groupId>org.apache.maven.scm</groupId>
+              <artifactId>maven-scm-provider-gitexe</artifactId>
+              <version>1.8.1</version>
+            </dependency>
+          </dependencies>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
 </project>
