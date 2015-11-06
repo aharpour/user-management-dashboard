@@ -4,7 +4,7 @@
   <parent>
     <groupId>nl.openweb.hippo.umd</groupId>
     <artifactId>user-management-dashboard</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
   </parent>
 
   <artifactId>user-management-dashboard-repository</artifactId>
