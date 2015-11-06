@@ -2,24 +2,26 @@
 
 /* Controllers */
 
-angular.module('myApp.controllers', [])
-  .controller('copy', [ '$scope', '$http', function($scope, $http) {
+angular.module('myApp.controllers', ['myApp.services'])
+  .controller('copy', [ '$scope', '$http', '$state', 'gracefulLoader', function($scope, $http, $state, gracefulLoader) {
       
-      $scope.availableUsers = [];
-      $scope.source = null;
-      $scope.target = null;
+      
+      $scope.source = {
+          availableUsers: [],
+          selected: null
+      };
+      $scope.target = {
+          availableUsers: [],
+          selected: null
+      };
       $scope.report = null;
       $scope.submit = function() {
-        if ($scope.source != null && $scope.target != null) {
-          data: { test: 'test' }
-          $http.post('../rest/api/users/copy/groups', {
-            target: $scope.target,
-            source: $scope.source,
-          }).then(function(respouse) {
-            $scope.report = JSON.stringify(respouse.data, null, 2);
-          }, function(e) {
-            console.log(e);
-            alert('Error');
+        if ($scope.source.selected != null && $scope.target.selected != null) {
+          gracefulLoader.post('../rest/api/users/copy/groups', {
+            target: $scope.target.selected,
+            source: $scope.source.selected,
+          }, function(data) {
+            $scope.report = JSON.stringify(data, null, 2);
           });
         } else {
           alert('you must select a source and a target user.');
@@ -27,13 +29,12 @@ angular.module('myApp.controllers', [])
         
       }
       
+   
+      gracefulLoader.fetch('../rest/api/users/list', function(data) {
+        $scope.source.availableUsers = data.source;
+        $scope.target.availableUsers = data.target;
+      });
       
-      $http.get('../rest/api/users/list').then(function(respouse) {
-        $scope.availableUsers = respouse.data;
-      }, function(e) {
-        console.log(e);
-        alert('Error');
-      } );
       
     }])
     .controller('overviews', [ '$scope', '$http', function($scope, $http) {}

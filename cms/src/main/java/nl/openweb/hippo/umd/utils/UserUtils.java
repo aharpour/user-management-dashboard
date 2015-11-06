@@ -44,6 +44,7 @@ public class UserUtils {
                 result.getCopiedGroups().add(group.getName());
             }
         }
+        session.save();
         return result;
     }
 

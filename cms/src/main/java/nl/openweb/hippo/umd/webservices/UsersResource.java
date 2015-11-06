@@ -8,8 +8,10 @@ import java.util.List;
 
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
+import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
+import javax.jcr.ValueFormatException;
 import javax.jcr.query.InvalidQueryException;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -27,6 +29,7 @@ import javax.ws.rs.core.StreamingOutput;
 import nl.openweb.hippo.umd.beans.CopyRequest;
 import nl.openweb.hippo.umd.beans.GroupCopyResults;
 import nl.openweb.hippo.umd.beans.UserBean;
+import nl.openweb.hippo.umd.beans.UsersBean;
 import nl.openweb.hippo.umd.utils.UserUtils;
 
 import org.apache.commons.csv.CSVFormat;
@@ -107,21 +110,14 @@ public class UsersResource {
     }
 
     @GET
-    @Path("list")
+    @Path("/list")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response listAllTheUsers(@Context HttpServletRequest request) {
+    public Response getTargetUsers(@Context HttpServletRequest request) {
+        Session session = JcrSessionUtil.getSessionFromRequest(request);
         try {
-            List<UserBean> result = new ArrayList<>();
-            Session session = JcrSessionUtil.getSessionFromRequest(request);
-            List<String> members = UserUtils.getDefaultGroupMembers(session);
-            for (String member : members) {
-                NodeIterator userNodes = UserUtils.getUserNodeById(member, session);
-                while (userNodes.hasNext()) {
-                    Node user = userNodes.nextNode();
-                    result.add(new UserBean(user.getPath(), user.getName()));
-                }
-            }
-            return Response.ok().entity(result).build();
+            List<UserBean> targetUser = getTargetUsers(session);
+            List<UserBean> sourceUser = getSourceUsers(session);
+            return Response.ok().entity(new UsersBean(sourceUser, targetUser)).build();
         } catch (RepositoryException e) {
             LOG.error(e.getMessage(), e);
             throw new WebApplicationException(e, Status.INTERNAL_SERVER_ERROR);
@@ -133,23 +129,46 @@ public class UsersResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response copyUserGroup(CopyRequest copyRequest, @Context HttpServletRequest request) {
+        Session session = JcrSessionUtil.getSessionFromRequest(request);
         try {
             Response result;
-            Session session = JcrSessionUtil.getSessionFromRequest(request);
             Node source = session.getNode(copyRequest.getSource());
             Node target = session.getNode(copyRequest.getTarget());
             if (UserUtils.isUser(source) && UserUtils.isUser(target)) {
-                GroupCopyResults report = UserUtils.copyUserGroups(source.getName(), source.getName(), session);
+                GroupCopyResults report = UserUtils.copyUserGroups(source.getName(), target.getName(), session);
                 result = Response.ok().entity(report).build();
             } else {
                 result = Response.status(Status.BAD_REQUEST).build();
             }
-
             return result;
         } catch (RepositoryException e) {
             LOG.error(e.getMessage(), e);
             throw new WebApplicationException(e, Status.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    private List<UserBean> getSourceUsers(Session session) throws PathNotFoundException, RepositoryException,
+            ValueFormatException, InvalidQueryException {
+        List<UserBean> result = new ArrayList<>();
+        List<String> members = UserUtils.getDefaultGroupMembers(session);
+        for (String member : members) {
+            NodeIterator userNodes = UserUtils.getUserNodeById(member, session);
+            while (userNodes.hasNext()) {
+                Node user = userNodes.nextNode();
+                result.add(new UserBean(user.getPath(), user.getName()));
+            }
+        }
+        return result;
+    }
+
+    private List<UserBean> getTargetUsers(Session session) throws RepositoryException {
+        List<UserBean> result = new ArrayList<>();
+        NodeIterator userNodes = UserUtils.getAllActiveUsers(session);
+        while (userNodes.hasNext()) {
+            Node user = userNodes.nextNode();
+            result.add(new UserBean(user.getPath(), user.getName()));
+        }
+        return result;
     }
 
     private void printGroup(Node group, Session session, CSVPrinter csvFilePrinter) throws IOException,
