@@ -51,7 +51,7 @@ public class UserUtils {
     public static NodeIterator getUserNodeById(String userId, Session session) throws InvalidQueryException,
             RepositoryException {
         NodeIterator result = null;
-        if (userId != null) {
+        if (StringUtils.isNotBlank(userId)) {
             StringBuilder stringBuilder = new StringBuilder("SELECT * FROM [hipposys:user] AS u ");
             if (!"*".equals(userId)) {
                 stringBuilder.append("WHERE NAME(u) = '").append(jcrSql2Escape(userId)).append("'");
